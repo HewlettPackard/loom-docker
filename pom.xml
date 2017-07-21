@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- (c) Copyright 2017 Hewlett Packard Enterprise Development LP Licensed 
+	under the Apache License, Version 2.0 (the "License"); you may not use this 
+	file except in compliance with the License. You may obtain a copy of the 
+	License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by 
+	applicable law or agreed to in writing, software distributed under the License 
+	is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY 
+	KIND, either express or implied. See the License for the specific language 
+	governing permissions and limitations under the License. -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.hpe.labs.loom</groupId>
+	<artifactId>loom-docker</artifactId>
+	<version>1.1-SNAPSHOT</version>
+	<name>Loom Docker Integration</name>
+	<description>Includes bundles adapter(s) for use with Docker</description>
+	<packaging>pom</packaging>
+
+	<organization>
+		<name>Hewlett Packard Labs, Bristol, UK</name>
+	</organization>
+
+	<scm>
+		<connection>scm:git:https://github.com/HewlettPackard/loom-docker.git</connection>
+		<url>https://github.com/HewlettPackard/loom-docker</url>
+	</scm>
+
+	<properties>
+		<loom-version>3.11-SNAPSHOT</loom-version>
+		<weaver-version>3.11-SNAPSHOT</weaver-version>
+		<jetty.version>9.3.6.v20151106</jetty.version>
+		<docker-adapter.version>1.1-SNAPSHOT</docker-adapter.version>
+
+		<maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
+		<maven-clean-plugin.version>3.0.0</maven-clean-plugin.version>
+		<maven-jar-plugin.version>2.4</maven-jar-plugin.version>
+		<maven-dependency-plugin.version>2.3</maven-dependency-plugin.version>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.hp.hpl.loom</groupId>
+			<artifactId>weaver</artifactId>
+			<version>${weaver-version}</version>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>com.hp.hpl.loom</groupId>
+			<artifactId>loom-server</artifactId>
+			<version>${loom-version}</version>
+			<type>war</type>
+		</dependency>
+
+		<dependency>
+			<groupId>com.hpe.labs.loom</groupId>
+			<artifactId>docker-adapter</artifactId>
+			<version>${docker-adapter.version}</version>
+			<type>jar</type>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<finalName>loom</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${maven-compiler-plugin.version}</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>${maven-clean-plugin.version}</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>adapters</directory>
+							<includes>
+								<include>*.jar</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>${maven-dependency-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>copy-war-to-lib-folder</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<!-- Loom server -->
+								<artifactItem>
+									<groupId>com.hp.hpl.loom</groupId>
+									<artifactId>loom-server</artifactId>
+									<version>${loom-version}</version>
+									<type>war</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>target</outputDirectory>
+									<destFileName>loom-server.war</destFileName>
+								</artifactItem>
+
+								<!-- Loom Weaver UI -->
+								<artifactItem>
+									<groupId>com.hp.hpl.loom</groupId>
+									<artifactId>weaver</artifactId>
+									<version>${weaver-version}</version>
+									<type>war</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>target</outputDirectory>
+									<destFileName>weaver.war</destFileName>
+								</artifactItem>
+
+								<artifactItem>
+									<groupId>com.hpe.labs.loom</groupId>
+									<artifactId>docker-adapter</artifactId>
+									<version>${docker-adapter.version}</version>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>adapters</outputDirectory>
+									<destFileName>docker-adapter.jar</destFileName>
+								</artifactItem>
+
+								<!-- Jetty Runner for convenience -->
+								<artifactItem>
+									<groupId>org.eclipse.jetty</groupId>
+									<artifactId>jetty-runner</artifactId>
+									<version>${jetty.version}</version>
+									<type>jar</type>
+									<overWrite>true</overWrite>
+									<outputDirectory>target</outputDirectory>
+									<destFileName>jetty-runner.jar</destFileName>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.2</version>
+				<configuration>
+					<executable>docker-build.sh</executable>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
