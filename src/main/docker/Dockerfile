@@ -1,4 +1,4 @@
-FROM debian:11.2
+FROM debian:11
 
 RUN apt-get update && apt-get install -y \
 	openjdk-8-jre-headless \
